@@ -38,11 +38,11 @@ struct Person {
 int SCR_W = 1280;
 int SCR_H = 720;
 const int ROWS = 6;
-const int COLS = 9; // 6x9 = 54 seats
+const int COLS = 9; // 6x9 = 54 seats, in specification minimal is 50 seats
 std::vector<Seat> seats;
 std::vector<Person> people;
 
-bool overlay = true;
+bool overlay = true; // starts with overlay on
 
 Shader* shader = nullptr;
 unsigned int quadVAO = 0, quadVBO = 0, quadEBO = 0;
@@ -78,7 +78,6 @@ void drawQuad(float x, float y, float w, float h, glm::vec4 color) {
     shader->use();
     glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, 0.0f));
     model = glm::scale(model, glm::vec3(w, h, 1.0f));
-    // If your Shader::setMat4 expects glm::mat4 directly, pass proj/model instead of &proj[0][0]
     shader->setMat4("uProj", &proj[0][0]);
     shader->setMat4("uModel", &model[0][0]);
     shader->setVec4("uColor", color.r, color.g, color.b, color.a);
@@ -89,8 +88,8 @@ void drawQuad(float x, float y, float w, float h, glm::vec4 color) {
 
 void drawText(float x, float y, const char* text, glm::vec4 color) {
     const int maxv = 99999;
-    std::vector<char> tmp(maxv);
-    int num_quads = stb_easy_font_print((float)x, (float)y, (char*)text, NULL, tmp.data(), (int)tmp.size());
+    std::vector<unsigned char> tmp(maxv);
+    int num_quads = stb_easy_font_print(x, y, text, nullptr, tmp.data(), (int)tmp.size());
     if (num_quads <= 0) return;
 
     float* fv = (float*)tmp.data();
@@ -196,7 +195,6 @@ void buyNSeats(int N) {
             }
         }
     }
-    // If we reach here, no suitable contiguous block was found anywhere.
 }
 
 // Simulation state
@@ -300,6 +298,7 @@ void updateSimulation(float dt) {
         }
         if (filmTimer >= filmTime) {
             // start exiting: set target to entrance for each person
+            filmColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
             for (auto& p : people) {
                 p.exiting = true;
                 p.seated = false;
@@ -442,7 +441,7 @@ int main() {
                     // rising edge -> process once
                     keyWasPressed[idx] = true;
                     int n = idx; // number of seats requested
-                    if (n >= 1 && n <= 9) { buyNSeats(n); overlay = false; }
+                    if (n >= 1 && n <= 9) { buyNSeats(n);}
                 }
                 else if (state == GLFW_RELEASE) {
                     // key released -> allow next press to trigger
@@ -468,7 +467,7 @@ int main() {
         if (state == GLFW_PRESS && !wasLeft) {
             double mx, my; glfwGetCursorPos(window, &mx, &my);
             int idx = seatAtPos(mx, my);
-            if (idx >= 0 && !simulationRunning) { toggleSeat(idx); overlay = false; }
+            if (idx >= 0 && !simulationRunning) { toggleSeat(idx); }
         }
         wasLeft = (state == GLFW_PRESS);
 
