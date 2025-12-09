@@ -124,12 +124,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Util.cpp" />
+    <ClCompile Include="stb_easy_font.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\stb_image.h" />
     <ClInclude Include="Header\Util.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="stb_easy_font.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
