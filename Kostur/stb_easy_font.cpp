@@ -2,7 +2,6 @@
 #include "./stb_easy_font.h"
 #include <cstring>
 
-// Jednostavna implementacija koja generiše dve trouglaste liste po karakteru.
 // vertex_buffer očekuje niz float-ova: x,y parovi (tri * num_tri * 2 floats).
 // Vraća broj trouglova (triangles).
 int stb_easy_font_print(float ox, float oy, const char* text, unsigned char* color, void* vertex_buffer, int vbuf_size)
