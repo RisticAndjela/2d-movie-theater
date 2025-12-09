@@ -13,7 +13,6 @@
 #include <cstdlib>
 
 #include "../Shader.h"
-#include "../stb_easy_font.h"
 
 // Simple 2D movie theater simulation
 
@@ -84,50 +83,6 @@ void drawQuad(float x, float y, float w, float h, glm::vec4 color) {
     glBindVertexArray(quadVAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
-}
-
-void drawText(float x, float y, const char* text, glm::vec4 color) {
-    const int maxv = 99999;
-    std::vector<unsigned char> tmp(maxv);
-    int num_quads = stb_easy_font_print(x, y, text, nullptr, tmp.data(), (int)tmp.size());
-    if (num_quads <= 0) return;
-
-    float* fv = (float*)tmp.data();
-    std::vector<float> triVerts;
-    triVerts.reserve(num_quads * 6 * 2);
-    for (int q = 0; q < num_quads; ++q) {
-        float* v0 = fv + (q * 4 + 0) * 2;
-        float* v1 = fv + (q * 4 + 1) * 2;
-        float* v2 = fv + (q * 4 + 2) * 2;
-        float* v3 = fv + (q * 4 + 3) * 2;
-        // tri 1
-        triVerts.push_back(v0[0]); triVerts.push_back(v0[1]);
-        triVerts.push_back(v1[0]); triVerts.push_back(v1[1]);
-        triVerts.push_back(v2[0]); triVerts.push_back(v2[1]);
-        // tri 2
-        triVerts.push_back(v2[0]); triVerts.push_back(v2[1]);
-        triVerts.push_back(v3[0]); triVerts.push_back(v3[1]);
-        triVerts.push_back(v0[0]); triVerts.push_back(v0[1]);
-    }
-
-    unsigned int tVAO, tVBO;
-    glGenVertexArrays(1, &tVAO);
-    glGenBuffers(1, &tVBO);
-    glBindVertexArray(tVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, tVBO);
-    glBufferData(GL_ARRAY_BUFFER, triVerts.size() * sizeof(float), triVerts.data(), GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-
-    shader->use();
-    glm::mat4 model = glm::mat4(1.0f);
-    shader->setMat4("uProj", &proj[0][0]);
-    shader->setMat4("uModel", &model[0][0]);
-    shader->setVec4("uColor", color.r, color.g, color.b, color.a);
-    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)(triVerts.size() / 2));
-    glBindVertexArray(0);
-    glDeleteBuffers(1, &tVBO);
-    glDeleteVertexArrays(1, &tVAO);
 }
 
 int screenToGLY(double y) { return SCR_H - (int)y; }
@@ -360,11 +315,9 @@ void renderScene() {
     // overlay
     if (overlay) {
         drawQuad(0, 0, (float)SCR_W, (float)SCR_H, glm::vec4(0.0f, 0.0f, 0.0f, 0.5f));
-        drawText(40, SCR_H - 60, "Press Enter to start simulation, Left-click to reserve seats, 1-9 to buy.", glm::vec4(1, 1, 1, 1));
     }
     // student info
     drawQuad(8, 8, 360, 60, glm::vec4(0.0f, 0.0f, 0.0f, 0.5f));
-    drawText(16, 28, "Ristic Andjela - 2D Movie Theater (Tema 7)", glm::vec4(1, 1, 1, 1));
 
     // draw custom cursor - a simple film camera icon
     double mx, my; glfwGetCursorPos(glfwGetCurrentContext(), &mx, &my);
@@ -415,10 +368,8 @@ int main() {
     // hide system cursor
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
-    // --- ADDED: key edge trackers to prevent repeated actions while key is held ---
     bool keyWasPressed[10] = { false }; // index 0..9 corresponds to keys '0'..'9'
     bool enterWasPressed = false;
-    // ---------------------------------------------------------------------------
 
     auto lastTime = std::chrono::high_resolution_clock::now();
     const double targetFrame = 1.0 / 75.0;
